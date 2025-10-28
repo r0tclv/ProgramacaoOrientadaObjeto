@@ -1,0 +1,218 @@
+import random                           #facilitar o uso da mecanica de random
+import time                             #pausa entre batalhas 
+from abc import ABC, abstractmethod     #crie classes abstratas, mas nao pode fazer uso diretamente
+from collections import Counter         #facilitar a conta para mostra relatorio final 
+# ============================================================
+# CLASSE BASE ABSTRATA - HERANÇA
+# ============================================================
+# A classe Character serve como SUPERCLASSE tanto para Hero quanto para Enemy.
+# Ela define atributos e comportamentos comuns a ambos (herança).
+
+class Character(ABC):  #PERSONAGENS 
+    def __init__(self, nome, mp, atk, sp, xp):
+        self.nome = nome          # Nome do personagem (usado em todas as subclasses)
+        self.mp = mp              # Pontos de magia / energia
+        self.atk = atk            # Ataque
+        self.sp = sp              # Defesa / velocidade
+        self.xp = xp              # Experiência
+        self.hp = mp * 10         # Vida calculada com base em mp
+        self.kills = 0            # Contador de abates
+    def is_alive(self):
+        return self.hp > 0
+    def take_damage(self, damage):
+        self.hp -= damage
+        return self.hp <= 0
+    @abstractmethod
+    def stack(self):  
+        # Metodo abstrato que será OBRIGATORIAMENTE sobrescrito nas subclasses
+        pass
+# ============================================================
+# CLASSE HERO - HERANÇA E POLIMORFISMO
+# ============================================================
+# Hero herda de Character e adiciona novos comportamentos (como itemList)
+class Hero(Character):  
+    def __init__(self, nome, mp, atk, sp, itemList, xp):
+        super().__init__(nome, mp, atk, sp, xp)
+        # itemList é uma lista genérica (array genérico), que pode conter qualquer tipo de item
+        self.itemList = itemList if isinstance(itemList, list) else [itemList] #ATRIBUTO NOVO
+# ============================================================
+# SUBCLASSES DE HERO - SOBREPOSIÇÃO 
+# ============================================================
+class Warrior(Hero):  
+    def __init__(self, nome, mp, atk, sp, itemList, xp):
+        # Modifica valores herdados (exemplo de herança com especialização)
+        super().__init__(nome, mp * 2, atk * 2, sp, itemList, xp)
+    def stack(self):
+        # Sobrescreve (override) o método abstrato da superclasse — exemplo de POLIMORFISMO
+        return f"{self.nome} (Guerreiro) !"
+class Archer(Hero):  
+    def __init__(self, nome, mp, atk, sp, itemList, xp):
+        super().__init__(nome, mp * 0.7, atk * 2.5, sp, itemList, xp)
+    def stack(self):
+        return f"{self.nome} (Arqueiro) !"
+class Mage(Hero):  
+    def __init__(self, nome, mp, atk, sp, itemList, xp):
+        super().__init__(nome, mp * 0.6, atk, sp * 3, itemList, xp)
+    def stack(self):
+        return f"{self.nome} (Mago) !"
+# ============================================================
+# CLASSE ENEMY - HERANÇA E POLIMORFISMO
+# ============================================================
+class Enemy(Character):  
+    def __init__(self, nome, mp, atk, xp, dark):
+        # Herda atributos de Character, mas redefine alguns (exemplo de especialização)
+        super().__init__(nome, mp, atk, 0, xp)
+        self.dark = dark  # Atributo exclusivo dos inimigos
+    def stack(self):
+        # Método a ser sobrescrito pelas subclasses
+        pass
+# ============================================================
+# SUBCLASSES DE ENEMY - SOBREPOSIÇÃO (OVERRIDE)
+# ============================================================
+class Slime(Enemy):  
+    def __init__(self, nome):
+        super().__init__(nome, mp=2, atk=10, xp=1, dark=1)
+    def stack(self):
+        return f"Slime {self.nome} !"
+class Goblin(Enemy):  
+    def __init__(self, nome):
+        super().__init__(nome, mp=5, atk=15, xp=3, dark=2)
+    def stack(self):
+        return f"Goblin {self.nome} !"
+class Dragon(Enemy):  
+    def __init__(self, nome):
+        super().__init__(nome, mp=100, atk=25, xp=10, dark=10)
+    def stack(self):
+        return f"Dragão {self.nome} !"
+# ============================================================
+# FUNÇÃO AUXILIAR - POLIMORFISMO DE REFERÊNCIA
+# ============================================================
+# get_name usa uma variável genérica (char) que pode ser Hero ou Enemy.
+# Isso é um exemplo de polimorfismo de referência — a função aceita múltiplos tipos.
+def get_name(char):
+    return char.nome  # Todos possuem o atributo 'nome', então não dá erro
+# ============================================================
+# FUNÇÃO PARA ADICIONAR HERÓIS E INIMIGOS
+# ============================================================
+# Uso de listas genéricas (arrays) para armazenar diferentes tipos de objetos.
+def add_characters():
+    heroes = []
+    enemies = []
+    while True:
+        print("\n||=========================================||")
+        print("||               PYTHONWAR                 ||")
+        print("||=========================================||")
+        print("||         1 - Adicionar heróis            ||")
+        print("||         2 - Adicionar inimigos          ||")
+        print("||         3 - Iniciar batalha             ||")
+        print("||=========================================||\n")
+        choice = input("Escolha uma opção: ")
+        if choice == '1':
+            qnt = int(input("Quantos heróis quer adicionar? "))
+            print("||=========================================||")
+            print("|| 1 - Guerreiro | 2 - Arqueiro | 3 - Mago ||")
+            print("||=========================================||")
+            cls = input("Classe: ")
+            for i in range(qnt):
+                if cls == '1':
+                    heroes.append(Warrior(f"Guerreiro{i+1}", 8, 8, 8, "Espada Enferrujada", 8))
+                elif cls == '2':
+                    heroes.append(Archer(f"Arqueiro{i+1}", 8, 8, 8, "Arco", 8))
+                else:
+                    heroes.append(Mage(f"Mago{i+1}", 8, 8, 8, "Cajado", 8))
+        elif choice == '2':
+            qnt = int(input("Quantos inimigos quer adicionar? "))
+            print("\n||=========================================||")
+            print("||   1 - Slime | 2 - Goblin | 3 - Dragão   ||")
+            print("||=========================================||")
+            cls = input("Tipo: ")
+            for i in range(qnt):
+                if cls == '1':
+                    enemies.append(Slime(f"Slime{i+1}"))
+                elif cls == '2':
+                    enemies.append(Goblin(f"Goblin{i+1}"))
+                else:
+                    enemies.append(Dragon(f"Dragão{i+1}"))
+        elif choice == '3':
+            if heroes and enemies:
+                break
+            else:
+                print("⚠️ Adicione pelo menos 1 herói e 1 inimigo.")
+    return heroes, enemies
+# ============================================================
+# FUNÇÃO DE SIMULAÇÃO DE BATALHA
+# ============================================================
+# Aqui ocorre o uso de polimorfismo e herança de maneira prática,
+# pois tanto heróis quanto inimigos (de classes diferentes) são tratados genericamente.
+def simulate_battle(heroes, enemies, delay=0.3):
+    round_num = 1
+    fatigue_multiplier = 1.0
+    print("||=========================================||")
+    print("||             START THE BATTLE            ||")
+    print("||=========================================||")
+    while any(h.is_alive() for h in heroes) and any(e.is_alive() for e in enemies):
+        print("\n\n||=========================================||")
+        print(f"=== Round {round_num} (Cansaço: x{fatigue_multiplier:.1f}) ===")
+        fatigue_multiplier += 0.5
+        round_num += 1
+        # Lista genérica com todos os combatentes (polimorfismo)
+        combatants = [c for c in heroes + enemies if c.is_alive()]
+        random.shuffle(combatants)
+        for attacker in combatants:
+            if not attacker.is_alive():
+                continue
+            targets = enemies if isinstance(attacker, Hero) else heroes
+            targets = [t for t in targets if t.is_alive()]
+            if not targets:
+                break
+            target = random.choice(targets)
+            if random.random() < 0.2:
+                print(f"❌ {get_name(attacker)} atacou {get_name(target)}, mas errou!")
+                time.sleep(delay)
+                continue
+            base_atk = attacker.atk * fatigue_multiplier
+            defense = target.sp if isinstance(target, Hero) else target.dark
+            damage = max(1, base_atk - defense + random.uniform(-2, 2))
+            died = target.take_damage(damage)
+            print(f"⚔️  {get_name(attacker)} causou {damage:.1f} de dano em {get_name(target)}.")
+            if died:
+                attacker.kills += 1
+                print(f"💀 {get_name(target)} foi derrotado!")
+            time.sleep(delay)
+    # Exibição dos resultados
+    print("\n||=========================================||")
+    print("||                END BATTLE               ||")
+    print("||=========================================||")
+    hero_kills = Counter(type(e).__name__ for e in enemies if not e.is_alive())
+    enemy_kills = Counter(type(h).__name__ for h in heroes if not h.is_alive())
+    survivors = Counter(type(c).__name__ for c in heroes + enemies if c.is_alive())
+    all_combatants = [c for c in heroes + enemies]
+    top_killers = sorted(all_combatants, key=lambda x: x.kills, reverse=True)[:5]
+    print("\n🧍 Sobreviventes (resumo):")
+    for tipo, count in survivors.items():
+        print(f" - {count} {tipo}(s) sobrevivente(s)")
+    print("\n☠️ Mortes Totais:")
+    print("Heróis derrotaram:")
+    print("||=========================================||")
+    if hero_kills:
+        for tipo, count in hero_kills.items():
+            print(f" - {count} {tipo}(s)")
+    else:
+        print(" - Nenhum inimigo derrotado")
+    print("Inimigos derrotaram:")
+    if enemy_kills:
+        for tipo, count in enemy_kills.items():
+            print(f" - {count} {tipo}(s)")
+    else:
+        print(" - Nenhum herói derrotado")
+    print("||=========================================||")
+    print("\n🏅 Top 5 Matadores:")
+    for i, c in enumerate(top_killers, 1):
+        lado = "Herói" if isinstance(c, Hero) else "Inimigo"
+        print(f"{i}. {get_name(c)} ({lado}, {type(c).__name__}) - {c.kills} abate(s)")
+        print("||=========================================||")
+# ============================================================
+# EXECUÇÃO DO SIMULADOR
+# ============================================================
+heroParty, enemies = add_characters()
+simulate_battle(heroParty, enemies, delay=0.1)
