@@ -9,7 +9,7 @@ Discount strategy using Design Patterns (Strategy Pattern)
 Polymorphism applied to stock operations
 PostgreSQL database integration using psycopg2
 Simple SQL playground page
-🏛 Technologies
+Technologies
 Python 3 + Flask
 PostgreSQL (managed through Navicat)
 HTML / Jinja2 templates
